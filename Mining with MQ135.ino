@@ -7,7 +7,6 @@
 
 #define vibrationPin 3
 #define methanMQ4 A0
-//#define buzzer 7
 #define carbonMonoMQ7 A1
 #define airQualityMQ135 A2
 
@@ -19,6 +18,7 @@ int vibrationData = 0;
 int methaneData = 0;
 int carbonmonoData = 0;
 int airqualityData = 0;
+float temp = 0;
 
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -29,6 +29,7 @@ void setup() {
   pinMode(airQualityMQ135,INPUT);
   pinMode(vibrationPin,INPUT);
   pinMode(methanMQ4,INPUT);
+  pinMode(buzzer,OUTPUT);
   Serial.begin(9600);
   lcd.begin();
   lcd.backlight();
@@ -44,15 +45,7 @@ void setup() {
   delay(500);
 }
 
-
-void humid()
-{
- 
-//    float humid = dht.readHumidity();
-//    Serial.print(humid);
-//    Serial.print("|");
-
-    float temp = dht.readTemperature();
+void SendBT(){
     Serial.print(carbonmonoData);
     Serial.print("|");
     Serial.print(methaneData);
@@ -60,7 +53,12 @@ void humid()
     Serial.print(airqualityData);
     Serial.print("|");
     Serial.print(temp);
-    
+  }
+  
+void humid()
+{
+
+    temp = dht.readTemperature();
 
     lcd.clear();
     lcd.setCursor(1,0);
@@ -68,33 +66,26 @@ void humid()
     lcd.setCursor(7,1);
     lcd.print(temp);
 
-    delay(5000);
-    
-    
+    delay(2000);
 }
 
 void buzzerFun()
 {
-  noTone(buzzer);
+
   
-//if( vibrationData == 1 )
-//  {
-//    tone(buzzer, 1500);
-//    delay(1000);
-//    noTone(buzzer);
-//    delay(100);
-//  }
-//  else
-//  {
-//    noTone(buzzer);
-//  }
+if( vibrationData == 1 )
+  {
+    tone(buzzer,500, 500);
+    delay(800);
+  }
+  else{
+    noTone(buzzer);
+    }
 
   if( methaneData > 80 )
   {
-    tone(buzzer, 2000);
-    delay(500);
-    noTone(buzzer);
-    delay(100);
+    tone(buzzer,1000, 500);
+    delay(1000);
   }
   else
   {
@@ -103,25 +94,22 @@ void buzzerFun()
 
   if( carbonmonoData > 350 )
   {
-    tone(buzzer, 2200);
-    delay(500);
-    noTone(buzzer);
-    delay(100);
+    tone(buzzer,1000, 500);
+    delay(1000);
   }
   else
   {
     noTone(buzzer);
   }
-  noTone(buzzer);
   
 }
 
 void loop()
 {
+  humid();
   buzzerFun();
   
   vibrationData = digitalRead(vibrationPin);
-  //Serial.print(vibrationData);
   
   carbonmonoData = analogRead(carbonMonoMQ7);
   carbonmonoData = map(carbonmonoData, 0, 1024, 0, 500);
@@ -131,7 +119,7 @@ void loop()
   lcd.print("CarbonMonoxide");
   lcd.setCursor(7,1);
   lcd.print(carbonmonoData);
-  delay(500);
+  delay(1000);
  
    
   methaneData = analogRead(methanMQ4);
@@ -142,20 +130,18 @@ void loop()
   lcd.print("Methane Gas");
   lcd.setCursor(7,1);
   lcd.print(methaneData);
-  delay(500);
+  delay(1000);
 
   airqualityData = analogRead(airQualityMQ135);
   airqualityData = map(airqualityData, 0, 1024, 0, 500);
+  
+  SendBT();
   
   lcd.clear();
   lcd.setCursor(1,0);
   lcd.print("Air Quality");
   lcd.setCursor(7,1);
   lcd.print(airqualityData);
-  delay(500);
-  Serial.print("\n");
-  
-  humid();
-
   delay(1000);
+  
 }
